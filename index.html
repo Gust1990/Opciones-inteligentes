@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opciones Inteligentes - Puts GGAL</title>
+    <title>Opciones Inteligentes - Calls GGAL</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
         .container { max-width: 750px; margin: 0 auto; background-color: #1e1e1e; border-radius: 12px; padding: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
         .header-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        h1 { color: #e53935; font-size: 1.6rem; margin: 0; text-align: center; } /* Rojo para Puts */
+        h1 { color: #4CAF50; font-size: 1.6rem; margin: 0; text-align: center; }
         .subtitle { color: #b3b3b3; font-size: 0.9rem; margin-top: 5px; }
-        .section-title { color: #e53935; font-size: 1.1rem; margin: 20px 0 10px 0; border-left: 4px solid #e53935; padding-left: 8px; }
+        .section-title { color: #4CAF50; font-size: 1.1rem; margin: 20px 0 10px 0; border-left: 4px solid #4CAF50; padding-left: 8px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 2; }
         label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #b3b3b3; font-weight: 600; }
         input { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 6px; background-color: #2c2c2c; color: #ffffff; box-sizing: border-box; font-size: 1rem; color-scheme: dark; }
-        input:focus { border-color: #e53935; outline: none; }
+        input:focus { border-color: #4CAF50; outline: none; }
         .hint { font-size: 0.8rem; color: #ffb74d; margin-top: 4px; margin-bottom: 10px; display: block; min-height: 16px; }
         .results { margin-top: 25px; background-color: #252525; border-radius: 8px; padding: 20px; }
-        .results h3 { margin-top: 0; color: #e53935; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .results h3 { margin-top: 0; color: #4CAF50; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
         .res-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px dashed #444; padding-bottom: 10px; gap: 15px; }
         .res-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .res-row span { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #cccccc; }
@@ -32,7 +32,7 @@
 
 <div class="container">
     <div class="header-container">
-        <h1>Estrategia Puts Inteligentes</h1>
+        <h1>Estrategia Calls Inteligentes</h1>
         <div class="subtitle">Activo Subyacente: Banco Galicia (GGAL)</div>
     </div>
     
@@ -52,34 +52,39 @@
             <input type="number" id="tasa" step="0.1" value="40" placeholder="Ej: 40">
         </div>
         <div>
-            <label>Strike Put Principal ($)</label>
+            <label>Strike Call Principal ($)</label>
             <input type="number" id="strike" step="0.01" placeholder="Ej: 7000">
         </div>
 
-        <div class="section-title full-width">📉 Estructura de la Posición (Puts)</div>
+        <div class="section-title full-width">📈 Estructura de la Posición (Calls)</div>
         <div>
-            <label>Compra - Put Principal ($)</label>
+            <label>Compra - Call Principal ($)</label>
             <input type="number" id="c1" step="0.01" placeholder="Ej: 216">
         </div>
         <div>
-            <label>Venta - Put 1 OTM ($)</label>
+            <label>Venta - Call 1 OTM ($)</label>
             <input type="number" id="vOtm1" step="0.01" placeholder="Ej: 164">
         </div>
 
         <div>
-            <label>Compra - Put 2 ($)</label>
+            <label>Compra - Call 2 ($)</label>
             <input type="number" id="c2" step="0.01" placeholder="Cargar al ejecutar...">
             <span class="hint" id="hint_c2"></span>
         </div>
         <div>
-            <label>Venta - Put 2 OTM ($)</label>
+            <label>Venta - Call 2 OTM ($)</label>
             <input type="number" id="vOtm2" step="0.01" placeholder="Cargar prima...">
+        </div>
+        
+        <div class="full-width">
+            <label>Put ($) - Cobertura Opcional</label>
+            <input type="number" id="vPut" step="0.01" placeholder="Prima de cobertura...">
         </div>
 
         <div class="section-title full-width">📊 Monitoreo en Tiempo Real</div>
         <div>
-            <label style="color: #ffb74d;">📈 Precio Actual del Put ($)</label>
-            <input type="number" id="actualCall" step="0.01" placeholder="Cotización del Put...">
+            <label style="color: #ffb74d;">📈 Precio Actual del Call ($)</label>
+            <input type="number" id="actualCall" step="0.01" placeholder="Cotización del Call...">
         </div>
         <div>
             <label style="color: #2196F3;">📉 Precio Actual GGAL ($)</label>
@@ -112,16 +117,16 @@
 <script>
     const fmt = (num) => new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
 
-    const inputsIds = ['vencimiento', 'iv', 'tasa', 'strike', 'c1', 'vOtm1', 'c2', 'vOtm2', 'actualCall', 'actualAccion'];
+    const inputsIds = ['vencimiento', 'iv', 'tasa', 'strike', 'c1', 'vOtm1', 'c2', 'vOtm2', 'vPut', 'actualCall', 'actualAccion'];
 
     function guardarAlmacenamiento() {
-        inputsIds.forEach(id => localStorage.setItem(`put_${id}`, document.getElementById(id).value));
+        inputsIds.forEach(id => localStorage.setItem(`call_${id}`, document.getElementById(id).value));
     }
 
     function cargarAlmacenamiento() {
         inputsIds.forEach(id => {
-            if (localStorage.getItem(`put_${id}`) !== null) {
-                document.getElementById(id).value = localStorage.getItem(`put_${id}`);
+            if (localStorage.getItem(`call_${id}`) !== null) {
+                document.getElementById(id).value = localStorage.getItem(`call_${id}`);
             }
         });
     }
@@ -158,36 +163,41 @@
         const vOtm1 = getVal('vOtm1');
         const c2 = getVal('c2');
         const vOtm2 = getVal('vOtm2');
-        const actualCall = getVal('actualCall'); // Precio del Put
+        const vPut = getVal('vPut');
+        const actualCall = getVal('actualCall');
         const actualAccion = getVal('actualAccion');
 
         const MULT = 100;
-        let puts_comprados = 0, inv = 0, cob = 0;
+        let calls_comprados = 0, inv = 0, cob = 0;
 
-        if (c1 > 0) { puts_comprados++; inv += c1 * MULT; cob += vOtm1 * MULT; }
-        if (c2 > 0) { puts_comprados++; inv += c2 * MULT; cob += vOtm2 * MULT; }
+        if (c1 > 0) { calls_comprados++; inv += c1 * MULT; cob += vOtm1 * MULT; }
+        if (c2 > 0) { calls_comprados++; inv += c2 * MULT; cob += vOtm2 * MULT; }
+        
+        cob += vPut * MULT; // Si se vende un put para financiar
         
         const costoNetoTotal = inv - cob;
-        const costoPorAccion = puts_comprados > 0 ? costoNetoTotal / (puts_comprados * MULT) : 0;
+        const costoPorAccion = calls_comprados > 0 ? costoNetoTotal / (calls_comprados * MULT) : 0;
 
-        // Breakeven para un Put Debit Spread: Strike - Costo Neto pagado
-        const breakeven = strike > 0 ? strike - costoPorAccion : 0;
+        // Breakeven para un Call Debit Spread: Strike + Costo Neto pagado
+        const breakeven = strike > 0 ? strike + costoPorAccion : 0;
 
         // PnL
-        const pnl = (actualCall * puts_comprados * MULT) - costoNetoTotal;
+        const pnl = (actualCall * calls_comprados * MULT) - costoNetoTotal;
         let rentabilidad = 0;
         if (costoNetoTotal > 0) {
             rentabilidad = (pnl / costoNetoTotal) * 100;
+        } else if (costoNetoTotal < 0 && inv > 0) {
+            rentabilidad = (pnl / inv) * 100;
         }
 
         // Modelo Black-Scholes para Probabilidad de Éxito (POP)
-        // Para que un Put Debit Spread gane dinero, el precio de la acción debe caer POR DEBAJO del Breakeven.
+        // Para que un Call Debit Spread gane dinero, el precio de la acción debe subir POR ENCIMA del Breakeven.
         let pop = 0;
         if (actualAccion > 0 && breakeven > 0 && dte > 0 && iv > 0) {
             const t = dte / 365;
             const d2 = (Math.log(actualAccion / breakeven) + (tasa - (iv * iv) / 2) * t) / (iv * Math.sqrt(t));
-            // Probabilidad de S < Breakeven es N(-d2)
-            pop = normalCDF(-d2) * 100;
+            // Probabilidad de S > Breakeven es N(d2)
+            pop = normalCDF(d2) * 100;
         }
 
         // Renderizado
