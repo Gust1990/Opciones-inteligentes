@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opciones inteligentes</title>
+    <title>Opciones Inteligentes - Banco Galicia</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -22,9 +22,9 @@
         }
         .header-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 15px;
             margin-bottom: 25px;
             border-bottom: 1px solid #333;
             padding-bottom: 15px;
@@ -34,6 +34,11 @@
             font-size: 1.6rem; 
             margin: 0;
             text-align: center;
+        }
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 0.9rem;
+            margin-top: 5px;
         }
         .section-title {
             color: #4CAF50;
@@ -66,6 +71,7 @@
             color: #ffffff; 
             box-sizing: border-box; 
             font-size: 1rem; 
+            color-scheme: dark;
         }
         input:focus { 
             border-color: #4CAF50; 
@@ -135,9 +141,22 @@
 <div class="container">
     <div class="header-container">
         <h1>Opciones inteligentes</h1>
+        <div class="subtitle">Activo Subyacente: Banco Galicia (GGAL)</div>
     </div>
     
     <div class="grid">
+        <div class="section-title full-width">⚙️ Variables de Riesgo</div>
+        <div>
+            <label>Fecha de Vencimiento 📅</label>
+            <input type="date" id="vencimiento">
+            <span class="hint" id="hint_dte">Días al vencimiento (DTE): 0</span>
+        </div>
+        <div>
+            <label>Volatilidad Implícita (IV) %</label>
+            <input type="number" id="iv" step="0.1" placeholder="Ej: 55.2">
+        </div>
+
+        <div class="section-title full-width">💸 Estructura de la Posición</div>
         <div>
             <label>Compra - Call Principal ($)</label>
             <input type="number" id="c1" step="0.01" placeholder="Ej: 473">
@@ -180,7 +199,7 @@
             <input type="number" id="actualCall" step="0.01" placeholder="Cotización del Call...">
         </div>
         <div>
-            <label style="color: #2196F3;">📉 Precio Actual Acción ($)</label>
+            <label style="color: #2196F3;">📉 Precio Actual GGAL ($)</label>
             <input type="number" id="actualAccion" step="0.01" placeholder="Precio de la acción...">
         </div>
     </div>
@@ -215,7 +234,7 @@
     // Formato con puntos para miles, sin decimales.
     const fmt = (num) => new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
 
-    const inputsIds = ['c1', 'vOtm1', 'c2', 'vOtm2', 'c3', 'vOtm3', 'vPut', 'actualCall', 'actualAccion'];
+    const inputsIds = ['vencimiento', 'iv', 'c1', 'vOtm1', 'c2', 'vOtm2', 'c3', 'vOtm3', 'vPut', 'actualCall', 'actualAccion'];
 
     function guardarAlmacenamiento() {
         inputsIds.forEach(id => localStorage.setItem(`opc_${id}`, document.getElementById(id).value));
@@ -229,9 +248,27 @@
         });
     }
 
+    function calcularDTE(fechaSeleccionada) {
+        if (!fechaSeleccionada) return 0;
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        // Se asume el huso horario local para evitar desfasajes en la selección
+        const [year, month, day] = fechaSeleccionada.split('-');
+        const vencimiento = new Date(year, month - 1, day);
+        
+        const diffTiempo = vencimiento - hoy;
+        const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
+        return diffDias > 0 ? diffDias : 0;
+    }
+
     function actualizar() {
         const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
         
+        const vencimientoVal = document.getElementById('vencimiento').value;
+        const dte = calcularDTE(vencimientoVal);
+        document.getElementById('hint_dte').innerText = `Días al vencimiento (DTE): ${dte}`;
+
         const c1 = getVal('c1');
         const vOtm1 = getVal('vOtm1');
         const c2 = getVal('c2');
@@ -253,7 +290,7 @@
         document.getElementById('hint_c3').innerText = c1 > 0 ? `(Aviso si cae a $ ${fmt(t2)})` : '';
         document.getElementById('hint_put').innerText = c1 > 0 ? `(Aviso si cae a $ ${fmt(t3)})` : '';
 
-        // Cada contrato = 100 acciones
+        // Cada contrato de GGAL en BYMA estándar = 100 acciones
         const MULT = 100;
         let calls = 0, inv = 0, cob = 0;
 
