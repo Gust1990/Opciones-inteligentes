@@ -106,6 +106,9 @@
         </div>
     </div>
 
+    <!-- Botón para guardar datos -->
+    <button id="btnConfirmar" style="width: 100%; padding: 12px; background-color: #2196F3; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: bold; margin-bottom: 25px; transition: background-color 0.3s;">💾 Confirmar y Guardar Datos</button>
+
     <div class="results">
         <div class="res-row">
             <span>Capital en Riesgo (Pérdida Máxima)</span>
@@ -279,9 +282,55 @@
         }
     }
 
+    // --- LÓGICA DE ALMACENAMIENTO LOCAL (NUEVO) --- //
+
+    const inputIds = [
+        'fechaApertura', 'actualAccion', 'vencimiento', 'iv', 
+        'tasa', 'lotes', 'strikeCompra', 'primaCompra', 
+        'strikeVenta', 'primaVenta'
+    ];
+
+    function guardarDatos() {
+        const datos = {};
+        inputIds.forEach(id => {
+            datos[id] = document.getElementById(id).value;
+        });
+        localStorage.setItem('simuladorAsimetria', JSON.stringify(datos));
+        
+        // Feedback visual
+        const btn = document.getElementById('btnConfirmar');
+        const originalText = btn.innerText;
+        btn.innerText = '✅ ¡Datos guardados exitosamente!';
+        btn.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = '#2196F3';
+        }, 2000);
+    }
+
+    function cargarDatos() {
+        const datosGuardados = localStorage.getItem('simuladorAsimetria');
+        if (datosGuardados) {
+            const datos = JSON.parse(datosGuardados);
+            inputIds.forEach(id => {
+                if (datos[id] !== undefined) {
+                    document.getElementById(id).value = datos[id];
+                }
+            });
+            calcular();
+        }
+    }
+
+    // Eventos
+    document.getElementById('btnConfirmar').addEventListener('click', guardarDatos);
+    window.addEventListener('DOMContentLoaded', cargarDatos);
+
+    // Calcular automáticamente cuando el usuario tipea
     document.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', calcular);
     });
+
 </script>
 
 </body>
