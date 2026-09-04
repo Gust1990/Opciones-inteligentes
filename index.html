@@ -2,147 +2,172 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opciones Inteligentes - Calls GGAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Asimetría</title>
+    
+    <!-- Meta tags para instalación SaaS (PWA) -->
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Asimetría">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link id="pwa-manifest" rel="manifest" href="">
+
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
-        .container { max-width: 750px; margin: 0 auto; background-color: #1e1e1e; border-radius: 12px; padding: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
-        .header-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        h1 { color: #4CAF50; font-size: 1.6rem; margin: 0; text-align: center; }
-        .subtitle { color: #b3b3b3; font-size: 0.9rem; margin-top: 5px; }
-        .section-title { color: #4CAF50; font-size: 1.1rem; margin: 20px 0 10px 0; border-left: 4px solid #4CAF50; padding-left: 8px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .container { max-width: 650px; margin: 0 auto; background-color: #1e1e1e; border-radius: 12px; padding: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
+        h1 { color: #4CAF50; font-size: 1.5rem; margin: 0 0 20px 0; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .section-title { color: #2196F3; font-size: 1rem; margin: 20px 0 10px 0; border-left: 4px solid #2196F3; padding-left: 8px; grid-column: span 2; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .full-width { grid-column: span 2; }
         label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #b3b3b3; font-weight: 600; }
         input { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 6px; background-color: #2c2c2c; color: #ffffff; box-sizing: border-box; font-size: 1rem; color-scheme: dark; }
         input:focus { border-color: #4CAF50; outline: none; }
-        .hint { font-size: 0.8rem; color: #ffb74d; margin-top: 4px; margin-bottom: 10px; display: block; min-height: 16px; }
-        .results { margin-top: 25px; background-color: #252525; border-radius: 8px; padding: 20px; }
-        .results h3 { margin-top: 0; color: #4CAF50; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .res-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px dashed #444; padding-bottom: 10px; gap: 15px; }
+        .hint { font-size: 0.8rem; color: #888; margin-top: 4px; display: block; }
+        .hint-dte { color: #ffb74d; }
+        
+        .results { background-color: #252525; border-radius: 8px; padding: 20px; border-left: 4px solid #4CAF50; }
+        .res-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed #444; padding-bottom: 8px; }
         .res-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .res-row span { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #cccccc; }
-        .res-row strong { color: #ffffff; font-size: 1.15rem; white-space: nowrap; text-align: right; }
-        .highlight { color: #4CAF50 !important; }
-        .highlight.negative { color: #e53935 !important; }
+        .res-row span { color: #ccc; font-size: 0.95rem; }
+        .res-row strong { font-size: 1.15rem; text-align: right; }
+        
+        .riesgo { color: #e53935; }
+        .ganancia { color: #4CAF50; }
+        .neutro { color: #ffb74d; }
+        .ratio-badge { background-color: #333; padding: 4px 10px; border-radius: 6px; font-weight: bold; color: #2196F3; }
         .pop-badge { background-color: #1976d2; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
+        .recupero-badge { background-color: #455a64; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
+        
+        /* Alerta 10 días */
+        .alerta-tiempo { display: none; background-color: #f57c00; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-container">
-        <h1>Estrategia Calls Inteligentes</h1>
-        <div class="subtitle">Activo Subyacente: Banco Galicia (GGAL)</div>
-    </div>
+    <h1>⚖️ Asimetría de Riesgo</h1>
     
     <div class="grid">
-        <div class="section-title full-width">⚙️ Variables de Riesgo (Black-Scholes)</div>
+        <div class="section-title" style="border-left-color: #ff9800; color: #ff9800;">⏱️ Monitoreo de Operación</div>
+        <div class="full-width">
+            <label>Fecha de Apertura de Posición 📅</label>
+            <input type="date" id="fechaApertura">
+            <span class="hint" id="hint_apertura" style="color: #ffb74d;">Días transcurridos: 0</span>
+        </div>
+        
+        <div class="full-width alerta-tiempo" id="alerta10Dias">
+            ⏳ ¡Plazo de 10 días cumplido! Evaluar cierre o continuidad de la estrategia.
+        </div>
+
+        <div class="section-title">📊 Variables de Mercado</div>
+        <div>
+            <label>Precio Actual de GGAL ($)</label>
+            <input type="number" id="actualAccion" step="0.01" placeholder="Ej: 6900">
+        </div>
         <div>
             <label>Fecha de Vencimiento 📅</label>
             <input type="date" id="vencimiento">
-            <span class="hint" id="hint_dte">Días al vencimiento (DTE): 0</span>
+            <span class="hint hint-dte" id="hint_dte">DTE: 0 días</span>
         </div>
         <div>
             <label>Volatilidad Implícita (IV) %</label>
-            <input type="number" id="iv" step="0.1" placeholder="Ej: 50">
+            <input type="number" id="iv" step="0.1" value="50">
         </div>
         <div>
             <label>Tasa Libre de Riesgo (%)</label>
-            <input type="number" id="tasa" step="0.1" value="40" placeholder="Ej: 40">
-        </div>
-        <div>
-            <label>Strike Call Principal ($)</label>
-            <input type="number" id="strike" step="0.01" placeholder="Ej: 7000">
+            <input type="number" id="tasa" step="0.1" value="20">
         </div>
 
-        <div class="section-title full-width">📈 Estructura de la Posición (Calls)</div>
-        <div>
-            <label>Compra - Call Principal ($)</label>
-            <input type="number" id="c1" step="0.01" placeholder="Ej: 216">
-        </div>
-        <div>
-            <label>Venta - Call 1 OTM ($)</label>
-            <input type="number" id="vOtm1" step="0.01" placeholder="Ej: 164">
-        </div>
-
-        <div>
-            <label>Compra - Call 2 ($)</label>
-            <input type="number" id="c2" step="0.01" placeholder="Cargar al ejecutar...">
-            <span class="hint" id="hint_c2"></span>
-        </div>
-        <div>
-            <label>Venta - Call 2 OTM ($)</label>
-            <input type="number" id="vOtm2" step="0.01" placeholder="Cargar prima...">
-        </div>
-        
+        <div class="section-title" style="border-left-color: #4CAF50; color: #4CAF50;">⚙️ Estructura de la Estrategia</div>
         <div class="full-width">
-            <label>Put ($) - Cobertura Opcional</label>
-            <input type="number" id="vPut" step="0.01" placeholder="Prima de cobertura...">
+            <label>Cantidad de Lotes (1 lote = 100 acciones)</label>
+            <input type="number" id="lotes" value="1" min="1">
         </div>
 
-        <div class="section-title full-width">📊 Monitoreo en Tiempo Real</div>
         <div>
-            <label style="color: #ffb74d;">📈 Precio Actual del Call ($)</label>
-            <input type="number" id="actualCall" step="0.01" placeholder="Cotización del Call...">
+            <label style="color: #4CAF50;">🟢 Strike Call Comprado ($)</label>
+            <input type="number" id="strikeCompra" step="0.01" placeholder="Ej: 7800">
         </div>
         <div>
-            <label style="color: #2196F3;">📉 Precio Actual GGAL ($)</label>
-            <input type="number" id="actualAccion" step="0.01" placeholder="Precio de la acción...">
+            <label style="color: #4CAF50;">Prima Pagada ($)</label>
+            <input type="number" id="primaCompra" step="0.01" placeholder="Ej: 216">
+        </div>
+
+        <div>
+            <label style="color: #e53935;">🔴 Strike Call Vendido ($)</label>
+            <input type="number" id="strikeVenta" step="0.01" placeholder="Opcional">
+        </div>
+        <div>
+            <label style="color: #e53935;">Prima Cobrada ($)</label>
+            <input type="number" id="primaVenta" step="0.01" placeholder="Ej: 111">
         </div>
     </div>
 
     <div class="results">
-        <h3>Resumen y Probabilidades</h3>
-        
         <div class="res-row">
-            <span>Costo Neto Real</span>
-            <strong id="res_neto">$ 0</strong>
+            <span>Capital en Riesgo (Pérdida Máxima)</span>
+            <strong id="res_riesgo" class="riesgo">$ 0</strong>
         </div>
         <div class="res-row">
-            <span>Punto de Equilibrio al Vencimiento</span>
-            <strong id="res_breakeven">$ 0</strong>
+            <span>Punto de Equilibrio (Breakeven)</span>
+            <strong id="res_breakeven" class="neutro">$ 0</strong>
         </div>
         <div class="res-row">
             <span>Probabilidad de Éxito (POP) 🎲</span>
-            <strong id="res_pop" class="pop-badge">0 %</strong>
+            <strong id="res_pop" class="pop-badge">0.00 %</strong>
         </div>
         <div class="res-row">
-            <span>Rentabilidad Actual</span>
-            <strong class="highlight" id="res_rentabilidad">0 %</strong>
+            <span>Ganancia Máxima Posible</span>
+            <strong id="res_ganancia" class="ganancia">$ 0</strong>
+        </div>
+        <div class="res-row">
+            <span>Retorno sobre Inversión (ROI Max)</span>
+            <strong id="res_roi" class="ganancia">0 %</strong>
+        </div>
+        <div class="res-row">
+            <span>Relación Riesgo / Beneficio</span>
+            <strong id="res_ratio" class="ratio-badge">1 : 0.00</strong>
+        </div>
+        <div class="res-row" style="margin-top: 15px; border-top: 2px solid #333; padding-top: 15px;">
+            <span>Suba de GGAL para Recuperar Riesgo 🔄<br><small style="font-size: 0.75rem; color: #888;">(Comprando equivalente en acciones físicas)</small></span>
+            <strong id="res_recupero_pct" class="recupero-badge">0.00 %</strong>
         </div>
     </div>
 </div>
 
 <script>
+    // Generación dinámica del Manifiesto PWA para instalación
+    const manifestJSON = {
+        name: "Simulador de Asimetría",
+        short_name: "Asimetría",
+        start_url: window.location.href,
+        display: "standalone",
+        background_color: "#121212",
+        theme_color: "#1e1e1e",
+        icons: [{
+            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>",
+            sizes: "192x192",
+            type: "image/svg+xml"
+        }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/manifest+json'});
+    document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+            self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+        `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+    }
+
     const fmt = (num) => new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
 
-    const inputsIds = ['vencimiento', 'iv', 'tasa', 'strike', 'c1', 'vOtm1', 'c2', 'vOtm2', 'vPut', 'actualCall', 'actualAccion'];
-
-    function guardarAlmacenamiento() {
-        inputsIds.forEach(id => localStorage.setItem(`call_${id}`, document.getElementById(id).value));
-    }
-
-    function cargarAlmacenamiento() {
-        inputsIds.forEach(id => {
-            if (localStorage.getItem(`call_${id}`) !== null) {
-                document.getElementById(id).value = localStorage.getItem(`call_${id}`);
-            }
-        });
-    }
-
-    function calcularDTE(fechaSeleccionada) {
-        if (!fechaSeleccionada) return 0;
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const [year, month, day] = fechaSeleccionada.split('-');
-        const vencimiento = new Date(year, month - 1, day);
-        const diffTiempo = vencimiento - hoy;
-        const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
-        return diffDias > 0 ? diffDias : 0;
-    }
-
-    // Aproximación de la Distribución Normal Estándar Acumulada
     function normalCDF(x) {
         let t = 1 / (1 + 0.2316419 * Math.abs(x));
         let d = 0.3989423 * Math.exp(-x * x / 2);
@@ -150,74 +175,112 @@
         return x > 0 ? 1 - p : p;
     }
 
-    function actualizar() {
+    function calcularDias(fechaStr) {
+        if (!fechaStr) return 0;
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const [year, month, day] = fechaStr.split('-');
+        const fechaTarget = new Date(year, month - 1, day);
+        return Math.floor((fechaTarget - hoy) / (1000 * 60 * 60 * 24));
+    }
+
+    function calcular() {
         const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
         
-        const dte = calcularDTE(document.getElementById('vencimiento').value);
-        document.getElementById('hint_dte').innerText = `Días al vencimiento (DTE): ${dte}`;
+        // Lógica de 10 días
+        const fechaAperturaStr = document.getElementById('fechaApertura').value;
+        const alerta10Dias = document.getElementById('alerta10Dias');
+        const hintApertura = document.getElementById('hint_apertura');
+        
+        if (fechaAperturaStr) {
+            const diasTranscurridos = -calcularDias(fechaAperturaStr); // Negativo porque es hacia atrás en el tiempo
+            hintApertura.innerText = `Días transcurridos: ${diasTranscurridos >= 0 ? diasTranscurridos : 0}`;
+            
+            if (diasTranscurridos >= 10) {
+                alerta10Dias.style.display = 'block';
+            } else {
+                alerta10Dias.style.display = 'none';
+            }
+        } else {
+            hintApertura.innerText = `Días transcurridos: 0`;
+            alerta10Dias.style.display = 'none';
+        }
+
+        const lotes = getVal('lotes') > 0 ? getVal('lotes') : 1;
+        const mult = lotes * 100;
+
+        const sCompra = getVal('strikeCompra');
+        const pCompra = getVal('primaCompra');
+        const sVenta = getVal('strikeVenta');
+        const pVenta = getVal('primaVenta');
+        
+        const actualAccion = getVal('actualAccion');
+        
+        // DTE
+        const dte = calcularDias(document.getElementById('vencimiento').value);
+        document.getElementById('hint_dte').innerText = `DTE: ${dte > 0 ? dte : 0} días`;
 
         const iv = getVal('iv') / 100;
         const tasa = getVal('tasa') / 100;
-        const strike = getVal('strike');
-        const c1 = getVal('c1');
-        const vOtm1 = getVal('vOtm1');
-        const c2 = getVal('c2');
-        const vOtm2 = getVal('vOtm2');
-        const vPut = getVal('vPut');
-        const actualCall = getVal('actualCall');
-        const actualAccion = getVal('actualAccion');
 
-        const MULT = 100;
-        let calls_comprados = 0, inv = 0, cob = 0;
+        const costoPorAccion = pCompra - pVenta;
+        const riesgoMaximo = costoPorAccion * mult;
+        const breakeven = sCompra > 0 ? sCompra + costoPorAccion : 0;
 
-        if (c1 > 0) { calls_comprados++; inv += c1 * MULT; cob += vOtm1 * MULT; }
-        if (c2 > 0) { calls_comprados++; inv += c2 * MULT; cob += vOtm2 * MULT; }
-        
-        cob += vPut * MULT; // Si se vende un put para financiar
-        
-        const costoNetoTotal = inv - cob;
-        const costoPorAccion = calls_comprados > 0 ? costoNetoTotal / (calls_comprados * MULT) : 0;
+        let gananciaMaxima = 0;
+        let esIlimitada = false;
 
-        // Breakeven para un Call Debit Spread: Strike + Costo Neto pagado
-        const breakeven = strike > 0 ? strike + costoPorAccion : 0;
-
-        // PnL
-        const pnl = (actualCall * calls_comprados * MULT) - costoNetoTotal;
-        let rentabilidad = 0;
-        if (costoNetoTotal > 0) {
-            rentabilidad = (pnl / costoNetoTotal) * 100;
-        } else if (costoNetoTotal < 0 && inv > 0) {
-            rentabilidad = (pnl / inv) * 100;
+        if (sVenta > sCompra) {
+            gananciaMaxima = ((sVenta - sCompra) - costoPorAccion) * mult;
+        } else if (pCompra > 0 && sVenta === 0) {
+            esIlimitada = true;
         }
 
-        // Modelo Black-Scholes para Probabilidad de Éxito (POP)
-        // Para que un Call Debit Spread gane dinero, el precio de la acción debe subir POR ENCIMA del Breakeven.
         let pop = 0;
         if (actualAccion > 0 && breakeven > 0 && dte > 0 && iv > 0) {
             const t = dte / 365;
             const d2 = (Math.log(actualAccion / breakeven) + (tasa - (iv * iv) / 2) * t) / (iv * Math.sqrt(t));
-            // Probabilidad de S > Breakeven es N(d2)
             pop = normalCDF(d2) * 100;
         }
-
-        // Renderizado
-        document.getElementById('res_neto').innerText = `$ ${fmt(costoNetoTotal)}`;
-        document.getElementById('res_breakeven').innerText = `$ ${fmt(breakeven)}`;
-        document.getElementById('res_pop').innerText = pop > 0 ? `${pop.toFixed(2)} %` : "Faltan datos (Strike/DTE/IV)";
         
-        const rentElement = document.getElementById('res_rentabilidad');
-        rentElement.innerText = `${fmt(rentabilidad)} %`;
-        rentElement.className = rentabilidad < 0 ? "highlight negative" : "highlight";
+        let recuperoPct = 0;
+        if (riesgoMaximo > 0 && actualAccion > 0) {
+            recuperoPct = (riesgoMaximo / (actualAccion * mult)) * 100;
+        }
 
-        guardarAlmacenamiento();
+        document.getElementById('res_riesgo').innerText = riesgoMaximo > 0 ? `$ ${fmt(riesgoMaximo)}` : "$ 0";
+        document.getElementById('res_breakeven').innerText = breakeven > 0 ? `$ ${breakeven.toFixed(2)}` : "$ 0";
+        document.getElementById('res_pop').innerText = pop > 0 ? `${pop.toFixed(2)} %` : "Faltan datos";
+        
+        const elRecupero = document.getElementById('res_recupero_pct');
+        elRecupero.innerText = recuperoPct > 0 ? `+${recuperoPct.toFixed(2)} %` : "0.00 %";
+
+        const elGanancia = document.getElementById('res_ganancia');
+        const elRoi = document.getElementById('res_roi');
+        const elRatio = document.getElementById('res_ratio');
+
+        if (riesgoMaximo <= 0) {
+            elGanancia.innerText = "$ 0";
+            elRoi.innerText = "0 %";
+            elRatio.innerText = "1 : 0.00";
+            return;
+        }
+
+        if (esIlimitada) {
+            elGanancia.innerText = "ILIMITADA 🚀";
+            elRoi.innerText = "ILIMITADO";
+            elRatio.innerText = "1 : ∞";
+        } else {
+            elGanancia.innerText = gananciaMaxima > 0 ? `$ ${fmt(gananciaMaxima)}` : "$ 0";
+            const roi = (gananciaMaxima / riesgoMaximo) * 100;
+            elRoi.innerText = gananciaMaxima > 0 ? `${fmt(roi)} %` : "0 %";
+            const ratio = gananciaMaxima / riesgoMaximo;
+            elRatio.innerText = gananciaMaxima > 0 ? `1 : ${ratio.toFixed(2)}` : "1 : 0.00";
+        }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-        cargarAlmacenamiento();
-        actualizar();
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', actualizar);
-        });
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', calcular);
     });
 </script>
 
